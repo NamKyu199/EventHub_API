@@ -15,13 +15,13 @@ const UserSchema = new mongoose.Schema({
     },
     createAt: {
         type: Date,
-        default: Date.now()
+        default: Date.now
     },
     updateAt: {
         type: Date,
-        default: Date.now()
+        default: Date.now
     },
 })
 
-const UserModel = mongoose.model('user:', UserSchema);
+const UserModel = mongoose.model('User:', UserSchema);
 module.exports = UserModel;
