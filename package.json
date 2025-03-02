@@ -20,6 +20,8 @@
     "express": "^4.21.0",
     "express-async-handler": "^1.2.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.6.3"
+    "mongodb": "^6.14.0",
+    "mongoose": "^8.6.3",
+    "nodemailer": "^6.10.0"
   }
 }
