@@ -8,8 +8,12 @@ let otpStore = {};
 
 // Hàm tạo token JWT
 const getJsonWebToken = (email, id) => {
+    if (!process.env.SECRET_KEY) {
+        throw new Error('SECRET_KEY is not defined. Check your .env file.');
+    }
     return jwt.sign({ email, id }, process.env.SECRET_KEY, { expiresIn: '7d' });
 };
+
 
 // API gửi OTP xác thực email (trả về OTP trong response)
 // API gửi OTP xác thực email (trả về OTP trong response)
@@ -78,7 +82,7 @@ const register = asyncHandle(async (req, res) => {
         data: {
             email: newUser.email,
             id: newUser.id,
-            accesstoken: getJsonWebToken(email, newUser.id),
+            accesstoken: await getJsonWebToken(email, newUser.id),
         },
     });
 });
@@ -104,7 +108,7 @@ const login = asyncHandle(async (req, res) => {
         data: {
             id: existingUser.id,
             email: existingUser.email,
-            accesstoken: getJsonWebToken(email, existingUser.id),
+            accesstoken: await getJsonWebToken(email, existingUser.id),
         }
     });
 });
