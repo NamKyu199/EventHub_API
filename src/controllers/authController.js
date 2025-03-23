@@ -91,24 +91,25 @@ const register = asyncHandle(async (req, res) => {
 const login = asyncHandle(async (req, res) => {
     const { email, password } = req.body;
 
-    // Tìm người dùng theo email
     const existingUser = await UserModel.findOne({ email });
     if (!existingUser) {
         return res.status(403).json({ message: 'Người dùng không tồn tại' });
     }
 
-    // So sánh mật khẩu
     const isMatchPassword = await bcrypt.compare(password, existingUser.password);
     if (!isMatchPassword) {
         return res.status(401).json({ message: 'Mật khẩu không chính xác' });
     }
+
+    const accesstoken = getJsonWebToken(email, existingUser.id);
+    console.log("Generated Access Token:", accesstoken); // Debug token
 
     res.status(200).json({
         message: 'Đăng nhập thành công',
         data: {
             id: existingUser.id,
             email: existingUser.email,
-            accesstoken: await getJsonWebToken(email, existingUser.id),
+            accesstoken: accesstoken,
         }
     });
 });

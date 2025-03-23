@@ -1,11 +1,13 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
+
 const dbUrl = `mongodb+srv://${process.env.DATABASE_USERNAME}:${encodeURIComponent(process.env.DATABASE_PASSWORD)}@cluster0.5ia4f.mongodb.net/eventhub?retryWrites=true&w=majority`;
 
 const connectDB = async () => {
     try {
         const connection = await mongoose.connect(dbUrl); // Không cần options nữa
+        console.log('Đang kết nối đến:', mongoose.connection.host);
 
         console.log('✅ Connected to MongoDB:', connection.connection.host);
     } catch (error) {
