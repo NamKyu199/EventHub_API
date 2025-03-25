@@ -10,7 +10,7 @@ const EventSchema = new mongoose.Schema({
     authorId: String,
     startAt: Number,
     endAt: Number,
-    date: String,  // (Sửa từ `data` thành `date` nếu bạn muốn lưu ngày)
+    date: Number,  // (Sửa từ `data` thành `date` nếu bạn muốn lưu ngày)
     photoUrl: String,
     price: String,
     category: String,
@@ -22,6 +22,7 @@ const EventSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    followers: [String],
 });
 
 // Kiểm tra nếu model đã tồn tại thì sử dụng lại, tránh lỗi OverwriteModelError

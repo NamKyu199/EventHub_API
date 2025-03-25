@@ -1,6 +1,6 @@
 const asyncHandle = require("express-async-handler");
 const User = require("../models/userModel"); // Make sure this path is correct
-const UserModel = require("../models/userModel");
+const EventModel = require("../models/eventModel");
 
 const getAllUsers = asyncHandle(async (req, res) => {
 
@@ -20,4 +20,27 @@ const getAllUsers = asyncHandle(async (req, res) => {
     });
 });
 
-module.exports = { getAllUsers };
+const getEventsFollowed = asyncHandle(async (req, res) => {
+    const { uid } = req.query;
+
+    if (uid) {
+        const events = await EventModel.find({ followers: { $in: [uid] } });
+
+        const ids =[]
+
+        events.forEach((item) => ids.push(item.id));
+        console.log(ids)
+
+        res.status(200).json({
+            message: "Get events followed successfully",
+            data: ids // Trả về dữ liệu tìm được
+        });
+    } else {
+        res.status(400).json({
+            message: "User ID is required",
+            data: null
+        });
+    }
+});
+
+module.exports = { getAllUsers, getEventsFollowed };

@@ -64,22 +64,19 @@ const addNewEvent = asyncHandle(async (req, res) => {
 
 const getEvents = asyncHandle(async (req, res) => {
     try {
-        const { lat, long, distance } = req.query;
+        const { lat, long, distance, limit } = req.query;
+        const maxDistance = distance ? parseFloat(distance) : null;
+        const eventLimit = limit && !isNaN(parseInt(limit)) ? parseInt(limit) : 0;
 
-        if (!lat || !long) {
-            return res.status(400).json({ message: "Thiếu tọa độ vị trí hiện tại" });
-        }
+        if (lat && long) {
+            const events = await EventModel.find({})
+                .sort({ createdAt: -1 })
+                .limit(eventLimit);
 
-        const maxDistance = distance ? parseFloat(distance) : null; // Chuyển đổi `distance` thành số
-
-        const events = await EventModel.find({});
-
-        // Mảng chứa sự kiện hợp lệ
-        const filteredEvents = events
-            .map(event => {
-                if (!event.position || !event.position.lat || !event.position.long) {
+            const filteredEvents = events.reduce((acc, event) => {
+                if (!event.position?.lat || !event.position?.long) {
                     console.log(`⚠️ Sự kiện '${event.title}' không có vị trí hợp lệ`);
-                    return null;
+                    return acc;
                 }
 
                 const eventDistance = calcDistance({
@@ -91,19 +88,60 @@ const getEvents = asyncHandle(async (req, res) => {
 
                 console.log(`📍 Sự kiện '${event.title}' cách ${eventDistance.toFixed(2)} km`);
 
-                return { ...event.toObject(), distance: eventDistance };
-            })
-            .filter(event => event !== null && (maxDistance === null || event.distance <= maxDistance)); // Lọc khoảng cách hợp lệ
+                if (maxDistance === null || eventDistance <= maxDistance) {
+                    acc.push({ ...event.toObject(), distance: eventDistance });
+                }
+                return acc;
+            }, []);
 
-        return res.status(200).json({
-            message: "Lấy danh sách sự kiện thành công!",
-            data: filteredEvents,
-        });
+            return res.status(200).json({
+                message: "Lấy danh sách sự kiện thành công!",
+                data: filteredEvents,
+            });
+        } else {
+            const events = await EventModel.find({})
+                .sort({ createdAt: -1 })
+                .limit(eventLimit);
 
+            return res.status(200).json({
+                message: "Lấy danh sách sự kiện thành công!",
+                data: events,
+            });
+        }
     } catch (error) {
         console.error("❌ Lỗi khi lấy danh sách sự kiện:", error);
         return res.status(500).json({ message: "Lỗi server khi lấy danh sách sự kiện", error: error.message });
     }
 });
 
-module.exports = { addNewEvent, getEvents };
+const updateFollowers = asyncHandle(async (req, res) => {
+    const body = req.body;
+    const { id, followers } = body;
+
+    await EventModel.findByIdAndUpdate(id, { followers, updatedAt: Date.now() });
+
+    res.status(200).json({
+        message: "Cập nhật số lượng người tham gia thành công!",
+        data: [],
+    });
+});
+
+const getFollowers = asyncHandle(async (req, res) => {
+    const { id } = req.query;
+
+    const event = await EventModel.findById(id);
+
+    if (event) {
+        res.status(200).json({
+            message: "Lấy danh sách người tham gia thành công!",
+            data: event.followers,
+        });
+    } else {
+        res.status(404).json({
+            message: "Không tìm thấy sự kiện!",
+            data: [],
+        });
+    }
+});
+
+module.exports = { addNewEvent, getEvents, updateFollowers, getFollowers };
