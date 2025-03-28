@@ -1,6 +1,7 @@
 const asyncHandle = require("express-async-handler");
 const User = require("../models/userModel"); // Make sure this path is correct
 const EventModel = require("../models/eventModel");
+const UserModel = require("../models/userModel");
 
 const getAllUsers = asyncHandle(async (req, res) => {
 
@@ -12,7 +13,6 @@ const getAllUsers = asyncHandle(async (req, res) => {
         fullName: item.fullName ?? '',
         id: item.id,
     }));
-    console.log(data)
 
     res.status(200).json({
         message: "Users retrieved successfully",
@@ -26,10 +26,9 @@ const getEventsFollowed = asyncHandle(async (req, res) => {
     if (uid) {
         const events = await EventModel.find({ followers: { $in: [uid] } });
 
-        const ids =[]
+        const ids = []
 
         events.forEach((item) => ids.push(item.id));
-        console.log(ids)
 
         res.status(200).json({
             message: "Get events followed successfully",
@@ -43,4 +42,17 @@ const getEventsFollowed = asyncHandle(async (req, res) => {
     }
 });
 
-module.exports = { getAllUsers, getEventsFollowed };
+const updateFcmToken = asyncHandle(async (req, res) => {
+    const { uid, fcmTokens } = req.body
+
+    await UserModel.findByIdAndUpdate(uid, {
+        fcmTokens
+    });
+
+    res.status(200).json({
+        message: 'Lấy FcmTokens thành công',
+        data: [],
+    });
+});
+
+module.exports = { getAllUsers, getEventsFollowed, updateFcmToken };

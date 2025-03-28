@@ -104,12 +104,15 @@ const login = asyncHandle(async (req, res) => {
     const accesstoken = getJsonWebToken(email, existingUser.id);
     console.log("Generated Access Token:", accesstoken); // Debug token
 
+    // ✅ Thêm fullName vào phản hồi
     res.status(200).json({
         message: 'Đăng nhập thành công',
         data: {
             id: existingUser.id,
             email: existingUser.email,
+            fullName: existingUser.fullName, // ✅ Thêm fullName
             accesstoken: accesstoken,
+            fcmTokens: existingUser.fcmTokens ?? []
         }
     });
 });

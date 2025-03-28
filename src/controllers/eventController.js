@@ -26,8 +26,6 @@ const addNewEvent = asyncHandle(async (req, res) => {
             return res.status(400).json({ message: "Dữ liệu sự kiện không hợp lệ!" });
         }
 
-        console.log("📥 Dữ liệu nhận từ client:", body);
-
         // Kiểm tra trường bắt buộc
         const requiredFields = ["title", "description", "locationTitle", "startAt", "endAt"];
         for (const field of requiredFields) {
@@ -48,8 +46,6 @@ const addNewEvent = asyncHandle(async (req, res) => {
         // Lưu sự kiện vào MongoDB
         const newEvent = new EventModel(body);
         await newEvent.save();
-
-        console.log("🆕 Sự kiện mới được lưu:", newEvent);
 
         return res.status(201).json({
             message: "Thêm sự kiện thành công!",
@@ -75,7 +71,6 @@ const getEvents = asyncHandle(async (req, res) => {
 
             const filteredEvents = events.reduce((acc, event) => {
                 if (!event.position?.lat || !event.position?.long) {
-                    console.log(`⚠️ Sự kiện '${event.title}' không có vị trí hợp lệ`);
                     return acc;
                 }
 
@@ -85,8 +80,6 @@ const getEvents = asyncHandle(async (req, res) => {
                     addressLat: parseFloat(event.position.lat),
                     addressLong: parseFloat(event.position.long),
                 });
-
-                console.log(`📍 Sự kiện '${event.title}' cách ${eventDistance.toFixed(2)} km`);
 
                 if (maxDistance === null || eventDistance <= maxDistance) {
                     acc.push({ ...event.toObject(), distance: eventDistance });
