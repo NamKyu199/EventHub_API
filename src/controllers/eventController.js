@@ -43,8 +43,14 @@ const addNewEvent = asyncHandle(async (req, res) => {
             return res.status(400).json({ message: "Thời gian bắt đầu hoặc kết thúc không hợp lệ!" });
         }
 
-        // Lưu sự kiện vào MongoDB
-        const newEvent = new EventModel(body);
+        // ✅ Lưu thêm thông tin người tạo
+        const newEvent = new EventModel({
+            ...body,
+            authorIds: body.authorIds,
+            authorName: body.authorName,
+            authorEmail: body.authorEmail,
+        });
+
         await newEvent.save();
 
         return res.status(201).json({

@@ -112,7 +112,8 @@ const login = asyncHandle(async (req, res) => {
             email: existingUser.email,
             fullName: existingUser.fullName, // ✅ Thêm fullName
             accesstoken: accesstoken,
-            fcmTokens: existingUser.fcmTokens ?? []
+            fcmTokens: existingUser.fcmTokens ?? [],
+            photo: existingUser.photoUrl ?? ''
         }
     });
 });

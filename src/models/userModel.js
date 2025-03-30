@@ -10,6 +10,9 @@ const UserSchema = new mongoose.Schema({
     password: {
         type: String,
     },
+    bio: {
+        type: String,
+    },
     photoUrl: {
         type: String,
     },
@@ -23,8 +26,14 @@ const UserSchema = new mongoose.Schema({
     },
     fcmTokens: {
         type: [String],
-    }
-})
+    },
+    following: {
+        type: [String],
+    },
+    interest: {
+        type: [String],
+    },
+});
 
 const UserModel = mongoose.model('User:', UserSchema);
 module.exports = UserModel;
