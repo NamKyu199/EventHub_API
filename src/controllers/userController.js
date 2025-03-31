@@ -63,7 +63,7 @@ const getProfile = asyncHandle(async (req, res) => {
                 createAt: profile.createAt,
                 updateAt: profile.updateAt,
                 following: profile.following ?? [],
-                interest: profile.interest ?? '',
+                interests: profile.interests ?? '',
                 fullName: profile.fullName ?? '',
                 email: profile.email ?? '',
                 bio: profile.bio ?? '',
@@ -136,7 +136,100 @@ const updateProfile = asyncHandle(async (req, res) => {
     }
 
 
-})
+});
 
+const updateInterests = asyncHandle(async (req, res) => {
+    const body = req.body; // Đây là mảng interests được gửi từ client
+    const { uid } = req.query; // ID người dùng
 
-module.exports = { getAllUsers, getEventsFollowed, updateFcmToken, getProfile, getFollowers, updateProfile };
+    // Kiểm tra uid và body
+    if (uid && body) {
+        await UserModel.findByIdAndUpdate(
+            uid, // ✅ Tham số đầu tiên phải là ObjectId của người dùng
+            { interests: body }, // ✅ Tham số thứ hai là đối tượng cập nhật
+            { new: true } // Tùy chọn trả về document sau khi cập nhật
+        );
+
+        res.status(200).json({
+            message: 'Update Interests Successful!',
+            data: body,
+        });
+    } else {
+        res.status(404).json({
+            message: 'Update Interests Failed!',
+            data: '',
+        });
+    }
+});
+
+const toggleFollowing = asyncHandle(async (req, res) => {
+    const { uid, authorId } = req.body;
+
+    // Bắt buộc phải có cả uid và authorId
+    if (!uid || !authorId) {
+        console.log("❌ Cần cung cấp đầy đủ uid và authorId");
+        return res.status(400).json({
+            message: "Thiếu uid hoặc authorId",
+            data: [],
+        });
+    }
+
+    try {
+        // Tìm user và author
+        const user = await UserModel.findById(uid);
+        const author = await UserModel.findById(authorId);
+
+        // Kiểm tra kết quả truy vấn
+        if (!user) {
+            console.log("❌ Không tìm thấy người dùng với uid:", uid);
+            return res.status(404).json({
+                message: "Không tìm thấy người dùng",
+                data: [],
+            });
+        }
+
+        if (!author) {
+            console.log("❌ Không tìm thấy người dùng với authorId:", authorId);
+            return res.status(404).json({
+                message: "Không tìm thấy tác giả",
+                data: [],
+            });
+        }
+
+        // Xử lý theo dõi
+        const { following = [] } = user;
+        const index = following.findIndex(element => element === authorId);
+
+        if (index !== -1) {
+            following.splice(index, 1); // Hủy theo dõi
+        } else {
+            following.push(authorId); // Theo dõi
+        }
+
+        // Cập nhật danh sách following
+        await UserModel.findByIdAndUpdate(uid, { following }, { new: true });
+
+        console.log("✅ Đã xử lý theo dõi thành công");
+        res.status(200).json({
+            message: "✅ Đã xử lý thành công",
+            data: following,
+        });
+    } catch (error) {
+        console.log("❌ Lỗi xử lý:", error);
+        res.status(500).json({
+            message: "❌ Xử lý thất bại",
+            error,
+        });
+    }
+});
+
+module.exports = {
+    getAllUsers,
+    getEventsFollowed,
+    updateFcmToken,
+    getProfile,
+    getFollowers,
+    updateProfile,
+    updateInterests,
+    toggleFollowing
+};

@@ -1,5 +1,6 @@
 const asyncHandle = require("express-async-handler");
 const EventModel = require('../models/eventModel');
+const CategoryModel = require("../models/categoryModel");
 
 const calcDistance = ({ currentLat, currentLong, addressLat, addressLong }) => {
     const r = 6371;
@@ -143,4 +144,32 @@ const getFollowers = asyncHandle(async (req, res) => {
     }
 });
 
-module.exports = { addNewEvent, getEvents, updateFollowers, getFollowers };
+const ceartCategory = asyncHandle(async (req, res) => {
+    try {
+        const data = req.body;
+
+        const newCategory = new CategoryModel(data);
+        await newCategory.save(); // ✅ Thêm await
+
+        res.status(200).json({
+            message: 'Thêm thành công Category',
+            data: newCategory,
+        });
+    } catch (error) {
+        console.error("❌ Lỗi khi thêm Category:", error);
+        res.status(500).json({ message: "Lỗi khi thêm Category", error: error.message });
+    }
+});
+
+const getCategories = asyncHandle(async (req, res) => {
+    // Sử dụng .lean() để tránh lỗi circular reference
+    const items = await CategoryModel.find({}).lean();
+
+    res.status(200).json({
+        message: 'Lấy dữ liệu Categories thành công!',
+        data: items,
+    });
+});
+
+
+module.exports = { addNewEvent, getEvents, updateFollowers, getFollowers, ceartCategory, getCategories };

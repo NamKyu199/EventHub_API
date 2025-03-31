@@ -30,7 +30,10 @@ const UserSchema = new mongoose.Schema({
     following: {
         type: [String],
     },
-    interest: {
+    followers: {
+        type: [String]
+    },
+    interests: {
         type: [String],
     },
 });
