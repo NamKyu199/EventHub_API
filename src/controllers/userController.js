@@ -9,9 +9,11 @@ const getAllUsers = asyncHandle(async (req, res) => {
 
     const data = []
     users.forEach((item) => data.push({
+        id: item.id,
         email: item.email ?? '',
         fullName: item.fullName ?? '',
-        id: item.id,
+        followers: item.followers ?? '',
+        following: item.following ?? '',
     }));
 
     res.status(200).json({
@@ -223,6 +225,25 @@ const toggleFollowing = asyncHandle(async (req, res) => {
     }
 });
 
+const getFollowing = asyncHandle(async (req, res) => {
+    const { uid } = req.query;
+
+    if (uid) {
+        const users = await UserModel.findById(uid)
+        console.log(users)
+
+        res.status(200).json({
+            message: "Get users followers successfully",
+            data: users.following
+        });
+    } else {
+        res.status(400).json({
+            message: "User ID is required",
+            data: null
+        });
+    }
+});
+
 module.exports = {
     getAllUsers,
     getEventsFollowed,
@@ -231,5 +252,6 @@ module.exports = {
     getFollowers,
     updateProfile,
     updateInterests,
-    toggleFollowing
+    toggleFollowing,
+    getFollowing
 };

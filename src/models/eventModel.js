@@ -25,7 +25,8 @@ const EventSchema = new mongoose.Schema({
     followers: [String],
     authorIds: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     authorName: { type: String },
-    authorEmail: { type: String }, 
+    authorEmail: { type: String },
+    authorPhotoUrl: { type: String },
 });
 
 // Kiểm tra nếu model đã tồn tại thì sử dụng lại, tránh lỗi OverwriteModelError

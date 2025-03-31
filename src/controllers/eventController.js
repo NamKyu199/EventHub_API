@@ -50,6 +50,7 @@ const addNewEvent = asyncHandle(async (req, res) => {
             authorIds: body.authorIds,
             authorName: body.authorName,
             authorEmail: body.authorEmail,
+            authorPhotoUrl: body.authorPhotoUrl,
         });
 
         await newEvent.save();
