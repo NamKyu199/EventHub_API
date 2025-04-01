@@ -14,8 +14,6 @@ const getJsonWebToken = (email, id) => {
     return jwt.sign({ email, id }, process.env.SECRET_KEY, { expiresIn: '7d' });
 };
 
-
-// API gửi OTP xác thực email (trả về OTP trong response)
 // API gửi OTP xác thực email (trả về OTP trong response)
 const verification = asyncHandle(async (req, res) => {
     const { email } = req.body;
@@ -102,7 +100,6 @@ const login = asyncHandle(async (req, res) => {
     }
 
     const accesstoken = getJsonWebToken(email, existingUser.id);
-    console.log("Generated Access Token:", accesstoken); // Debug token
 
     // ✅ Thêm fullName vào phản hồi
     res.status(200).json({
@@ -118,9 +115,47 @@ const login = asyncHandle(async (req, res) => {
     });
 });
 
+// API thay đổi mật khẩu
+const changePassword = asyncHandle(async (req, res) => {
+    const { email, newPassword, repassword } = req.body;
+
+    // Kiểm tra thông tin đầu vào
+    if (!email || !newPassword || !repassword) {
+        return res.status(400).json({ message: 'Email, mật khẩu mới và mật khẩu nhập lại không được để trống.' });
+    }
+
+    if (newPassword.length < 8 || newPassword.length > 15) {
+        return res.status(400).json({
+            message: "Mật khẩu phải có ít nhất 8 ký tự và tối đa 15 ký tự.",
+        });
+    }
+
+    if (newPassword !== repassword) {
+        return res.status(400).json({ message: "Mật khẩu nhập lại không khớp." });
+    }
+
+    // Kiểm tra người dùng tồn tại trong cơ sở dữ liệu
+    const existingUser = await UserModel.findOne({ email });
+    if (!existingUser) {
+        return res.status(404).json({ message: 'Người dùng không tồn tại' });
+    }
+
+    // Mã hóa mật khẩu mới
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Cập nhật mật khẩu mới vào cơ sở dữ liệu
+    existingUser.password = hashedPassword;
+    await existingUser.save();
+
+    res.status(200).json({
+        message: 'Mật khẩu đã được thay đổi thành công',
+    });
+});
+
 module.exports = {
     register,
     login,
     verification,
     verifyOtp,
+    changePassword
 };

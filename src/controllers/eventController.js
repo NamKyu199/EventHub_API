@@ -172,5 +172,24 @@ const getCategories = asyncHandle(async (req, res) => {
     });
 });
 
+const searchEvent = asyncHandle(async (req, res) => {
+    const { title } = req.query;
+    const events = await EventModel.find({});
 
-module.exports = { addNewEvent, getEvents, updateFollowers, getFollowers, ceartCategory, getCategories };
+    const items = events.filter(element => element.title.toLocaleLowerCase().includes(title.toLocaleLowerCase()))
+
+    return res.status(200).json({
+        message: "Lấy danh sách sự kiện thành công!",
+        data: items,
+    });
+});
+
+module.exports = {
+    addNewEvent,
+    getEvents,
+    updateFollowers,
+    getFollowers,
+    ceartCategory,
+    getCategories,
+    searchEvent
+};

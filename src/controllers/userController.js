@@ -14,6 +14,7 @@ const getAllUsers = asyncHandle(async (req, res) => {
         fullName: item.fullName ?? '',
         followers: item.followers ?? '',
         following: item.following ?? '',
+        photoUrl: item.photoUrl ?? '',
     }));
 
     res.status(200).json({
@@ -230,7 +231,6 @@ const getFollowing = asyncHandle(async (req, res) => {
 
     if (uid) {
         const users = await UserModel.findById(uid)
-        console.log(users)
 
         res.status(200).json({
             message: "Get users followers successfully",
@@ -244,6 +244,49 @@ const getFollowing = asyncHandle(async (req, res) => {
     }
 });
 
+// Lưu danh sách người được mời vào CSDL hoặc một biến toàn cục
+let invitedUsers = []; // Giải pháp tạm thời
+
+// Hàm đẩy thông báo lời mời
+const pushInviteNotification = asyncHandle(async (req, res) => {
+    const { ids, eventId } = req.body;
+    invitedUsers = []; // Xóa danh sách cũ
+
+    for (const id of ids) {
+        const user = await UserModel.findById(id);
+        if (user) {
+            const { fullName, email, photoUrl } = user;
+            invitedUsers.push({
+                userId: id,
+                fullName,
+                email,
+                photoUrl,
+                eventId,
+            });
+        }
+    }
+
+    res.status(200).json({
+        message: 'Thông tin người dùng đã được lấy thành công.',
+        data: invitedUsers,
+    });
+});
+
+// Hàm lấy danh sách người được mời
+const getInvitedUsers = asyncHandle(async (req, res) => {
+    if (invitedUsers.length === 0) {
+        return res.status(404).json({
+            message: "Không có lời mời nào.",
+            data: [],
+        });
+    }
+
+    res.status(200).json({
+        message: 'Lấy danh sách người được mời thành công.',
+        data: invitedUsers,
+    });
+});
+
 module.exports = {
     getAllUsers,
     getEventsFollowed,
@@ -253,5 +296,7 @@ module.exports = {
     updateProfile,
     updateInterests,
     toggleFollowing,
-    getFollowing
+    getFollowing,
+    pushInviteNotification,
+    getInvitedUsers
 };

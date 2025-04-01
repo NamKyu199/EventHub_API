@@ -7,8 +7,7 @@ const dbUrl = `mongodb+srv://${process.env.DATABASE_USERNAME}:${encodeURICompone
 const connectDB = async () => {
     try {
         const connection = await mongoose.connect(dbUrl); // Không cần options nữa
-        console.log('Đang kết nối đến:', mongoose.connection.host);
-
+        
         console.log('✅ Connected to MongoDB:', connection.connection.host);
     } catch (error) {
         console.error('❌ Error connecting to MongoDB:', error.message);
