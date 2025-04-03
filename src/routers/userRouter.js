@@ -2,7 +2,19 @@ const Router = require('express');
 
 const userRouter = Router();
 
-const { getAllUsers, getEventsFollowed, updateFcmToken, getProfile, getFollowers, updateProfile, updateInterests, toggleFollowing, getFollowing, pushInviteNotification,getInvitedUsers } = require('../controllers/userController')
+const {
+    getAllUsers,
+    getEventsFollowed,
+    updateFcmToken,
+    getProfile,
+    getFollowers,
+    updateProfile,
+    updateInterests,
+    toggleFollowing,
+    getFollowing,
+    pushInviteNotification,
+    getInvitedUsers
+} = require('../controllers/userController')
 
 userRouter.get('/get-all', getAllUsers)
 userRouter.get('/get-followed-events', getEventsFollowed)

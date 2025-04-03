@@ -1,6 +1,7 @@
 const asyncHandle = require("express-async-handler");
 const EventModel = require('../models/eventModel');
 const CategoryModel = require("../models/categoryModel");
+const BillModel = require("../models/billModel");
 
 const calcDistance = ({ currentLat, currentLong, addressLat, addressLong }) => {
     const r = 6371;
@@ -184,6 +185,87 @@ const searchEvent = asyncHandle(async (req, res) => {
     });
 });
 
+const getEventCategoryId = asyncHandle(async (req, res) => {
+    const { id } = req.query;
+
+    if (!id) {
+        return res.status(400).json({ message: 'Missing category ID in the request.' });
+    }
+
+    try {
+        // Tìm category bằng ID
+        const category = await CategoryModel.findById(id);
+        console.log("Category found:", category);
+
+        // Nếu không tìm thấy category, trả về lỗi 404
+        if (!category) {
+            return res.status(404).json({ message: 'Category not found.' });
+        }
+
+        // Lấy key của category
+        const key = category.key;
+
+        // Tìm sự kiện có category phù hợp
+        const events = await EventModel.find({ category });  // Tìm sự kiện theo category key
+        console.log("Events found:", events);
+
+        // Trả về danh sách sự kiện
+        res.status(200).json({
+            message: 'Lấy thành công danh sách Events theo Category!',
+            data: events,
+        });
+    } catch (error) {
+        console.error('Error fetching events:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+const handleAddNewBillDetail = asyncHandle(async (req, res) => {
+    try {
+        const data = req.body;
+        data.price = parseFloat(data.price);
+
+        const bill = new BillModel(data);
+        await bill.save();
+
+        res.status(200).json({
+            message: 'Add new bill info successfully!',
+            data: bill,
+        });
+    } catch (error) {
+        console.error("❌ Error while adding new bill:", error);
+        res.status(500).json({
+            message: 'Failed to add new bill info!',
+            error: error.message,
+        });
+    }
+});
+
+const handleUpdatePaymentSuccess = asyncHandle(async (req, res) => {
+    const { billId } = req.query;
+
+    // Cập nhật trạng thái và trả về kết quả mới
+    const updatedBill = await BillModel.findByIdAndUpdate(
+        billId,
+        {
+            status: 'success',
+            updateAt: Date.now()
+        },
+        { new: true } // Trả về kết quả sau khi cập nhật
+    );
+
+    if (!updatedBill) {
+        return res.status(404).json({
+            message: 'Bill not found.',
+        });
+    }
+
+    res.status(200).json({
+        message: 'Update bill successfully',
+        data: updatedBill, // Trả về bill đã cập nhật
+    });
+});
+
 module.exports = {
     addNewEvent,
     getEvents,
@@ -191,5 +273,8 @@ module.exports = {
     getFollowers,
     ceartCategory,
     getCategories,
-    searchEvent
+    searchEvent,
+    getEventCategoryId,
+    handleAddNewBillDetail,
+    handleUpdatePaymentSuccess
 };
