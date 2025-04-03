@@ -9,7 +9,7 @@ const EventSchema = new mongoose.Schema({
     users: [String],
     authorId: String,
     startAt: Number,
-    endAt: Number,
+    endAt: Number ,
     date: Number,  // (Sửa từ `data` thành `date` nếu bạn muốn lưu ngày)
     photoUrl: String,
     price: String,

@@ -70,26 +70,38 @@ const addNewEvent = asyncHandle(async (req, res) => {
 const getEvents = asyncHandle(async (req, res) => {
     try {
         const { lat, long, distance, limit } = req.query;
+
+        // Kiểm tra xem lat và long có hợp lệ không
+        const parsedLat = lat ? parseFloat(lat) : null;
+        const parsedLong = long ? parseFloat(long) : null;
         const maxDistance = distance ? parseFloat(distance) : null;
         const eventLimit = limit && !isNaN(parseInt(limit)) ? parseInt(limit) : 0;
 
-        if (lat && long) {
+        // Nếu có lat và long thì tiếp tục xử lý theo phạm vi
+        if (parsedLat && parsedLong) {
+            // Kiểm tra lat và long có hợp lệ không
+            if (isNaN(parsedLat) || isNaN(parsedLong)) {
+                return res.status(400).json({ message: "Vị trí không hợp lệ!" });
+            }
+
             const events = await EventModel.find({})
                 .sort({ createdAt: -1 })
                 .limit(eventLimit);
 
             const filteredEvents = events.reduce((acc, event) => {
+                // Kiểm tra event có thông tin vị trí không
                 if (!event.position?.lat || !event.position?.long) {
                     return acc;
                 }
 
                 const eventDistance = calcDistance({
-                    currentLat: parseFloat(lat),
-                    currentLong: parseFloat(long),
+                    currentLat: parsedLat,
+                    currentLong: parsedLong,
                     addressLat: parseFloat(event.position.lat),
                     addressLong: parseFloat(event.position.long),
                 });
 
+                // Nếu khoảng cách nhỏ hơn hoặc bằng khoảng cách tối đa
                 if (maxDistance === null || eventDistance <= maxDistance) {
                     acc.push({ ...event.toObject(), distance: eventDistance });
                 }
@@ -101,6 +113,7 @@ const getEvents = asyncHandle(async (req, res) => {
                 data: filteredEvents,
             });
         } else {
+            // Nếu không có lat và long, lấy tất cả sự kiện
             const events = await EventModel.find({})
                 .sort({ createdAt: -1 })
                 .limit(eventLimit);
@@ -115,6 +128,7 @@ const getEvents = asyncHandle(async (req, res) => {
         return res.status(500).json({ message: "Lỗi server khi lấy danh sách sự kiện", error: error.message });
     }
 });
+
 
 const updateFollowers = asyncHandle(async (req, res) => {
     const body = req.body;
