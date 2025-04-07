@@ -129,7 +129,6 @@ const getEvents = asyncHandle(async (req, res) => {
     }
 });
 
-
 const updateFollowers = asyncHandle(async (req, res) => {
     const body = req.body;
     const { id, followers } = body;

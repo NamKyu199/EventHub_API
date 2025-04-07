@@ -247,17 +247,25 @@ const getFollowing = asyncHandle(async (req, res) => {
 // Lưu danh sách người được mời vào CSDL hoặc một biến toàn cục
 let invitedUsers = []; // Giải pháp tạm thời
 
-// Hàm đẩy thông báo lời mời
 const pushInviteNotification = asyncHandle(async (req, res) => {
-    const { ids, eventId } = req.body;
-    invitedUsers = []; // Xóa danh sách cũ
+    const { id, eventId } = req.body;
+    invitedUsers = []; // Reset danh sách
 
-    for (const id of ids) {
-        const user = await UserModel.findById(id);
-        if (user) {
-            const { fullName, email, photoUrl } = user;
+    const sender = await UserModel.findById(id);
+
+    if (!sender || !sender.following) {
+        return res.status(400).json({
+            message: "Không tìm thấy danh sách following từ người dùng.",
+            data: [],
+        });
+    }
+
+    for (const fid of sender.following) {
+        const friend = await UserModel.findById(fid);
+        if (friend) {
+            const { fullName, email, photoUrl } = friend;
             invitedUsers.push({
-                userId: id,
+                userId: fid,
                 fullName,
                 email,
                 photoUrl,

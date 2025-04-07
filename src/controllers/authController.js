@@ -119,36 +119,47 @@ const login = asyncHandle(async (req, res) => {
 const changePassword = asyncHandle(async (req, res) => {
     const { email, newPassword, repassword } = req.body;
 
-    // Kiểm tra thông tin đầu vào
+    // Kiểm tra dữ liệu đầu vào
     if (!email || !newPassword || !repassword) {
-        return res.status(400).json({ message: 'Email, mật khẩu mới và mật khẩu nhập lại không được để trống.' });
+        return res.status(400).json({ message: 'Email, mật khẩu mới và mật khẩu nhập lại là bắt buộc.' });
     }
 
+    // Kiểm tra độ dài mật khẩu
     if (newPassword.length < 8 || newPassword.length > 15) {
         return res.status(400).json({
-            message: "Mật khẩu phải có ít nhất 8 ký tự và tối đa 15 ký tự.",
+            message: "Mật khẩu phải có từ 8 đến 15 ký tự.",
         });
     }
 
+    // Kiểm tra mật khẩu nhập lại
     if (newPassword !== repassword) {
         return res.status(400).json({ message: "Mật khẩu nhập lại không khớp." });
     }
 
-    // Kiểm tra người dùng tồn tại trong cơ sở dữ liệu
-    const existingUser = await UserModel.findOne({ email });
-    if (!existingUser) {
-        return res.status(404).json({ message: 'Người dùng không tồn tại' });
+    // Tìm người dùng theo email
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+        return res.status(404).json({ message: 'Không tìm thấy người dùng với email này.' });
     }
 
     // Mã hóa mật khẩu mới
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Cập nhật mật khẩu mới vào cơ sở dữ liệu
-    existingUser.password = hashedPassword;
-    await existingUser.save();
+    // Cập nhật mật khẩu
+    user.password = hashedPassword;
+    await user.save();
 
-    res.status(200).json({
+    // Gửi phản hồi thành công kèm dữ liệu tài khoản
+    return res.status(200).json({
         message: 'Mật khẩu đã được thay đổi thành công',
+        data: {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            photo: user.photoUrl ?? '',
+            fcmTokens: user.fcmTokens ?? [],
+        }
     });
 });
 
